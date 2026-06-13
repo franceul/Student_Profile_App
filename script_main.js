@@ -47,8 +47,15 @@ async function register() {
 
         const data = await response.json();
 
-        document.getElementById("message")
-            .innerText = data.message || data.detail;
+        if (response.ok) {
+
+            window.location.href = "home.html";
+        
+        } else {
+        
+            document.getElementById("message")
+                .innerText = data.detail;
+        }
 
     } catch (error) {
 
@@ -86,8 +93,20 @@ async function login() {
 
         const data = await response.json();
 
-        document.getElementById("message")
-            .innerText = data.message || data.detail;
+        if (response.ok) {
+
+            localStorage.setItem(
+                "token",
+                data.access_token
+            );
+        
+            window.location.href =
+                "home.html";
+        } else {
+        
+            document.getElementById("message")
+                .innerText = data.detail;
+        }
 
     } catch (error) {
 
