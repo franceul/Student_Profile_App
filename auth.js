@@ -84,3 +84,84 @@ async function loadProfile() {
 }
 
 loadProfile();
+
+
+async function saveMotto() {
+
+    const token =
+        localStorage.getItem("token");
+
+    const motto =
+        document.getElementById(
+            "mottoInput"
+        ).value;
+
+    const response = await fetch(
+        `${API_URL}/save-motto`,
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/json",
+
+                Authorization:
+                    `Bearer ${token}`
+            },
+
+            body: JSON.stringify({
+                motto: motto
+            })
+        }
+    );
+
+    const data =
+        await response.json();
+
+    document.getElementById(
+        "mottoMessage"
+    ).innerText = data.message;
+}
+
+
+async function loadMottos() {
+
+    const response =
+        await fetch(
+            `${API_URL}/users`
+        );
+
+    const users =
+        await response.json();
+
+    const container =
+        document.getElementById(
+            "mottoContainer"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    users.forEach(user => {
+
+        const card =
+            document.createElement("div");
+
+        card.classList.add(
+            "motto-card"
+        );
+
+        card.innerHTML = `
+            <h3>${user.username}</h3>
+            <p>${user.motto || ""}</p>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+
+loadMottos();

@@ -45,6 +45,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
+    motto = Column(String, nullable=True)
 
 
 # Create table automatically
@@ -160,6 +161,11 @@ class UserData(BaseModel):
     password: str
 
 
+class MottoData(BaseModel):
+
+    motto: str
+
+
 # ==========================================
 # REGISTER
 # ==========================================
@@ -243,6 +249,52 @@ def login(user: UserData):
     }
 
 
+@app.post("/save-motto")
+def save_motto(
+    data: MottoData,
+    username: str = Depends(
+        get_current_user
+    )
+):
+    db = SessionLocal()
+    
+    user = (
+        db.query(User)
+        .filter(
+            User.username == username
+        )
+        .first()
+    )
+
+    user.motto = data.motto
+    db.commit()
+    db.close()
+    return {
+        "message": "Motto saved"
+    }
+
+
+@app.get("/users")
+def get_users():
+
+    db = SessionLocal()
+
+    users = db.query(User).all()
+
+    result = []
+
+    for user in users:
+
+        result.append(
+            {
+                "username": user.username,
+                "motto": user.motto
+            }
+        )
+
+    db.close()
+
+    return result
 # ==========================================
 # TEST ROUTE
 # ==========================================
