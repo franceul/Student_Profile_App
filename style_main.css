@@ -144,20 +144,40 @@ footer {
 
     margin-top: 50px;
 }
+.motto-slider {
+
+    overflow: hidden;
+
+    width: 100%;
+
+    margin-top: 20px;
+}
 #mottoContainer {
 
     display: flex;
 
-    flex-wrap: wrap;
-
     gap: 20px;
 
-    margin-top: 20px;
+    width: max-content;
+
+    animation: scrollLeft 40s linear infinite;
+}
+@keyframes scrollLeft {
+
+    from {
+
+        transform: translateX(100%);
+    }
+
+    to {
+
+        transform: translateX(-100%);
+    }
 }
 
 .motto-card {
 
-    width: 250px;
+    min-width: 250px;
 
     background: white;
 

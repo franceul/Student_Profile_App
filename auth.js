@@ -161,6 +161,22 @@ async function loadMottos() {
 
         container.appendChild(card);
     });
+    users.forEach(user => {
+
+        const card =
+            document.createElement("div");
+    
+        card.classList.add(
+            "motto-card"
+        );
+    
+        card.innerHTML = `
+            <h3>${user.username}</h3>
+            <p>${user.motto || ""}</p>
+        `;
+    
+        container.appendChild(card);
+    });
 }
 
 
