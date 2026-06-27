@@ -10,8 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
 from passlib.context import CryptContext
 
@@ -70,6 +69,21 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="login"
 )
+
+
+# ==========================================
+# DATABASE DEPENDENCY
+# ==========================================
+
+def get_db():
+
+    db = SessionLocal()
+
+    try:
+        yield db
+
+    finally:
+        db.close()
 
 
 def hash_password(password):
@@ -171,9 +185,10 @@ class MottoData(BaseModel):
 # ==========================================
 
 @app.post("/register")
-def register(user: UserData):
-
-    db = SessionLocal()
+def register(
+    user: UserData, 
+    db: Session = Depends(get_db)
+):
 
     existing_user = (
         db.query(User)
@@ -182,7 +197,6 @@ def register(user: UserData):
     )
 
     if existing_user:
-        db.close()
         raise HTTPException(
             status_code=400,
             detail="Username already exists"
@@ -196,8 +210,6 @@ def register(user: UserData):
     db.add(new_user)
     db.commit()
 
-    db.close()
-
     return {
         "message": "Account created successfully"
     }
@@ -208,9 +220,11 @@ def register(user: UserData):
 # ==========================================
 
 @app.post("/login")
-def login(user: UserData):
+def login(
+    user: UserData, 
+    db: Session = Depends(get_db)
+    ):
 
-    db = SessionLocal()
 
     existing_user = (
         db.query(User)
@@ -219,7 +233,6 @@ def login(user: UserData):
     )
 
     if not existing_user:
-        db.close()
         raise HTTPException(
             status_code=401,
             detail="Invalid username or password"
@@ -229,13 +242,11 @@ def login(user: UserData):
         user.password,
         existing_user.hashed_password
     ):
-        db.close()
         raise HTTPException(
             status_code=401,
             detail="Invalid username or password"
         )
 
-    db.close()
 
     token = create_access_token(
         {
@@ -254,9 +265,9 @@ def save_motto(
     data: MottoData,
     username: str = Depends(
         get_current_user
-    )
+    ), 
+    db: Session = Depends(get_db)
 ):
-    db = SessionLocal()
     
     user = (
         db.query(User)
@@ -268,31 +279,25 @@ def save_motto(
 
     user.motto = data.motto
     db.commit()
-    db.close()
     return {
         "message": "Motto saved"
     }
 
 
 @app.get("/users")
-def get_users():
-
-    db = SessionLocal()
+def get_users(
+    db: Session = Depends(get_db)
+):
 
     users = db.query(User).all()
-
     result = []
-
     for user in users:
-
         result.append(
             {
                 "username": user.username,
                 "motto": user.motto
             }
         )
-
-    db.close()
 
     return result
 # ==========================================
